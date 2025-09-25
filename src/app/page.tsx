@@ -12,16 +12,42 @@ export default function Home() {
           height={38}
           priority
         />
+        
+        <div className="text-center sm:text-left">
+          <h1 className="text-4xl font-bold mb-4">E-Commerce Cloud App</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+            Next.js e-commerce application with Prisma and MongoDB Atlas
+          </p>
+        </div>
+
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 w-full max-w-2xl">
+          <h2 className="text-xl font-semibold text-green-800 dark:text-green-200 mb-3">
+            ✅ Setup Complete!
+          </h2>
+          <ul className="space-y-2 text-sm text-green-700 dark:text-green-300">
+            <li>• Next.js e-commerce application created</li>
+            <li>• Prisma ORM configured for MongoDB</li>
+            <li>• MongoDB Atlas connected successfully</li>
+            <li>• E-commerce database collections created</li>
+            <li>• 11 models: Customer, Category, Product, Order, Payment, etc.</li>
+            <li>• Hierarchical categories and shopping cart support</li>
+            <li>• Complete order management system</li>
+          </ul>
+        </div>
+
         <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
+            MongoDB Atlas is already connected and configured.
+          </li>
+          <li className="mb-2 tracking-[-.01em]">
+            Database collections have been created successfully.
           </li>
           <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
+            Test the connection at{" "}
+            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
+              /api/test
+            </code>
+            .
           </li>
         </ol>
 

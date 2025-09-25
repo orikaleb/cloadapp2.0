@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-Commerce Cloud App - Next.js with Prisma
 
-## Getting Started
+A modern e-commerce Next.js application with Prisma ORM and MongoDB Atlas database.
 
-First, run the development server:
+## Features
+
+- ⚡ Next.js 15 with App Router
+- 🎨 Tailwind CSS for styling
+- 🗄️ Prisma ORM with MongoDB Atlas
+- 📝 TypeScript support
+- 🔧 ESLint configuration
+- 🛒 Complete e-commerce functionality
+
+## Database Models
+
+The application includes a comprehensive e-commerce database with 11 models:
+
+### Core Models
+- **Customer**: User accounts with authentication and profile information
+- **Category**: Hierarchical product categories with parent-child relationships
+- **Product**: Product catalog with SKU, pricing, and inventory management
+- **ProductImage**: Multiple images per product with primary image designation
+
+### Order Management
+- **Order**: Customer orders with status tracking and financial details
+- **OrderItem**: Individual products within orders with quantities and pricing
+- **Payment**: Payment transactions with multiple payment methods
+- **Sale**: Completed sales linking orders and payments
+- **Shipment**: Shipping and delivery tracking
+
+### Shopping Experience
+- **ShoppingCart**: Customer shopping carts with session management
+- **CartItem**: Products in shopping carts with quantities
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Environment Configuration
+
+The application is already configured with your MongoDB Atlas connection:
+
+```bash
+# MongoDB Atlas connection string (already configured)
+DATABASE_URL="mongodb+srv://calebotchere014_db_user:odoKFYzz3rhOvnN5@cluster0.sorewns.mongodb.net/cloudapp_db?retryWrites=true&w=majority"
+```
+
+### 3. Database Setup
+
+The MongoDB database is already set up and connected! The e-commerce collections have been created:
+
+```bash
+# Database is already configured and collections created
+# Collections: customers, categories, products, product_images, orders, order_items, shopping_carts, cart_items, payments, sales, shipments
+# Indexes: customers_email_key, products_sku_key, shopping_carts_customerId_key
+```
+
+### 4. Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Test Database Connection
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Visit [http://localhost:3000/api/test](http://localhost:3000/api/test) to test the database connection.
 
-## Learn More
+## Prisma Commands
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Generate Prisma client
+npx prisma generate
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Push schema changes to MongoDB
+npx prisma db push
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Open Prisma Studio
+npx prisma studio
 
-## Deploy on Vercel
+# View database in MongoDB Atlas
+# Visit: https://cloud.mongodb.com/
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/                 # Next.js App Router
+│   ├── api/            # API routes
+│   └── page.tsx        # Home page
+├── lib/                # Utility functions
+│   └── prisma.ts       # Prisma client configuration
+prisma/
+└── schema.prisma       # Database schema
+```
+
+## Next Steps
+
+1. Set up your PostgreSQL database
+2. Update the `DATABASE_URL` in `.env.local`
+3. Run `npx prisma migrate dev --name init` to create the database tables
+4. Start building your application features!
