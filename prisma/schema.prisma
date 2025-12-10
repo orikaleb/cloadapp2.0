@@ -158,7 +158,7 @@ model Payment {
   paymentDate   DateTime @default(now())
   paymentMethod String   // credit_card, debit_card, paypal, bank_transfer, etc.
   transactionId String?
-  currency      String   @default("USD")
+  currency      String   @default("GHS")
   amount        Float
   
   // Relations

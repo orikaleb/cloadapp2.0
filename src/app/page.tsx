@@ -1,128 +1,195 @@
-import Image from "next/image";
+'use client';
+
+import { useCart } from '@/lib/cart-context';
 
 export default function Home() {
+  const { getCartCount } = useCart();
+  
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        
-        <div className="text-center sm:text-left">
-          <h1 className="text-4xl font-bold mb-4">E-Commerce Cloud App</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            Next.js e-commerce application with Prisma and MongoDB Atlas
+    <div className="min-h-screen bg-white">
+      {/* Simple Navigation */}
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-xl font-bold text-blue-600">CloudStore</h1>
+            <div className="flex items-center space-x-4">
+              <a href="/cart" className="text-gray-600 hover:text-blue-600">Cart ({getCartCount()})</a>
+              <a href="/admin/login" className="text-gray-600 hover:text-blue-600 text-sm">Admin</a>
+              <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to CloudStore
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Modern e-commerce platform built with Next.js, Prisma, and MongoDB Atlas
+          </p>
+          <a href="/products" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 inline-block">
+            Start Shopping
+          </a>
+        </div>
+      </section>
+
+      {/* Quick Features */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-4">
+              <div className="text-2xl mb-2">⚡</div>
+              <h3 className="font-semibold mb-2">Fast</h3>
+              <p className="text-sm text-gray-600">Built with Next.js for optimal performance</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-2xl mb-2">🔒</div>
+              <h3 className="font-semibold mb-2">Secure</h3>
+              <p className="text-sm text-gray-600">MongoDB Atlas ensures data safety</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-2xl mb-2">📱</div>
+              <h3 className="font-semibold mb-2">Responsive</h3>
+              <p className="text-sm text-gray-600">Works perfectly on all devices</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sample Products */}
+      <section className="py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Featured Products</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-blue-100 rounded mb-4 flex items-center justify-center text-4xl">
+                🎧
+              </div>
+              <h3 className="font-semibold mb-2">Wireless Headphones</h3>
+              <p className="text-gray-600 text-sm mb-3">Premium quality with noise cancellation</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵199.99</span>
+                <a href="/products/1" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-green-100 rounded mb-4 flex items-center justify-center text-4xl">
+                ⌚
+              </div>
+              <h3 className="font-semibold mb-2">Smart Watch</h3>
+              <p className="text-gray-600 text-sm mb-3">Fitness tracking and notifications</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵299.99</span>
+                <a href="/products/2" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-purple-100 rounded mb-4 flex items-center justify-center text-4xl">
+                💻
+              </div>
+              <h3 className="font-semibold mb-2">Laptop Stand</h3>
+              <p className="text-gray-600 text-sm mb-3">Ergonomic aluminum design</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵79.99</span>
+                <a href="/products/3" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-yellow-100 rounded mb-4 flex items-center justify-center text-4xl">
+                🎮
+              </div>
+              <h3 className="font-semibold mb-2">Gaming Console</h3>
+              <p className="text-gray-600 text-sm mb-3">Next-gen 4K gaming experience</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵499.99</span>
+                <a href="/products/8" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-red-100 rounded mb-4 flex items-center justify-center text-4xl">
+                👟
+              </div>
+              <h3 className="font-semibold mb-2">Running Shoes</h3>
+              <p className="text-gray-600 text-sm mb-3">Advanced cushioning technology</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵149.99</span>
+                <a href="/products/6" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-indigo-100 rounded mb-4 flex items-center justify-center text-4xl">
+                ⌨️
+              </div>
+              <h3 className="font-semibold mb-2">Gaming Keyboard</h3>
+              <p className="text-gray-600 text-sm mb-3">Mechanical switches with RGB</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵129.99</span>
+                <a href="/products/30" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-pink-100 rounded mb-4 flex items-center justify-center text-4xl">
+                🧥
+              </div>
+              <h3 className="font-semibold mb-2">Leather Jacket</h3>
+              <p className="text-gray-600 text-sm mb-3">Premium quality leather</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵249.99</span>
+                <a href="/products" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="h-32 bg-teal-100 rounded mb-4 flex items-center justify-center text-4xl">
+                📱
+              </div>
+              <h3 className="font-semibold mb-2">Tablet</h3>
+              <p className="text-gray-600 text-sm mb-3">High-resolution display</p>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-blue-600">₵349.99</span>
+                <a href="/products" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                  View
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Simple Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h3 className="text-lg font-semibold mb-4">CloudStore</h3>
+          <p className="text-gray-400 mb-4">
+            Your trusted e-commerce platform
+          </p>
+          <p className="text-sm text-gray-500">
+            © 2024 CloudStore. Built with Next.js, Prisma, and MongoDB Atlas.
           </p>
         </div>
-
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 w-full max-w-2xl">
-          <h2 className="text-xl font-semibold text-green-800 dark:text-green-200 mb-3">
-            ✅ Setup Complete!
-          </h2>
-          <ul className="space-y-2 text-sm text-green-700 dark:text-green-300">
-            <li>• Next.js e-commerce application created</li>
-            <li>• Prisma ORM configured for MongoDB</li>
-            <li>• MongoDB Atlas connected successfully</li>
-            <li>• E-commerce database collections created</li>
-            <li>• 11 models: Customer, Category, Product, Order, Payment, etc.</li>
-            <li>• Hierarchical categories and shopping cart support</li>
-            <li>• Complete order management system</li>
-          </ul>
-        </div>
-
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            MongoDB Atlas is already connected and configured.
-          </li>
-          <li className="mb-2 tracking-[-.01em]">
-            Database collections have been created successfully.
-          </li>
-          <li className="tracking-[-.01em]">
-            Test the connection at{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              /api/test
-            </code>
-            .
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
       </footer>
     </div>
   );
