@@ -1,65 +1,17 @@
 'use client';
 
 import { useCart } from '@/lib/cart-context';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Navigation from '@/components/Navigation';
-import { ProductGridSkeleton } from '@/components/LoadingSkeleton';
 import Toast from '@/components/Toast';
-import { getProductImage } from '@/lib/product-images';
-
-type Product = {
-  id: string;
-  productName: string;
-  price: number;
-  productImages?: Array<{
-    imageUrl: string;
-    isPrimary: boolean;
-  }>;
-};
 
 export default function Home() {
   const { getCartCount } = useCart();
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
     message: '',
     type: 'info',
     isVisible: false,
   });
-
-  useEffect(() => {
-    fetchFeaturedProducts();
-  }, []);
-
-  const fetchFeaturedProducts = async () => {
-    try {
-      const res = await fetch('/api/products');
-      if (res.ok) {
-        const products = await res.json();
-        // Get first 8 products as featured
-        setFeaturedProducts(products.slice(0, 8));
-      }
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getProductEmoji = (productName: string): string => {
-    const name = productName.toLowerCase();
-    if (name.includes('headphone') || name.includes('earphone')) return '🎧';
-    if (name.includes('watch')) return '⌚';
-    if (name.includes('laptop') || name.includes('stand')) return '💻';
-    if (name.includes('speaker')) return '🔊';
-    if (name.includes('shirt') || name.includes('t-shirt')) return '👕';
-    if (name.includes('shoe') || name.includes('boot')) return '👟';
-    if (name.includes('console') || name.includes('gaming')) return '🎮';
-    if (name.includes('keyboard')) return '⌨️';
-    if (name.includes('tablet') || name.includes('phone')) return '📱';
-    if (name.includes('jacket')) return '🧥';
-    return '📦';
-  };
   
   return (
     <div className="min-h-screen bg-white">
@@ -146,100 +98,6 @@ export default function Home() {
               <p className="text-gray-600 leading-relaxed">Shop seamlessly on any device - desktop, tablet, or mobile</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Products</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover our handpicked selection of premium products
-            </p>
-          </div>
-          
-          {loading ? (
-            <ProductGridSkeleton count={8} />
-          ) : featuredProducts.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-gray-600 text-lg">No products available at the moment.</p>
-              <a href="/products" className="mt-4 inline-block text-blue-600 hover:text-blue-700 font-semibold">
-                Browse All Products →
-              </a>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product, index) => {
-                const primaryImage = product.productImages?.find(img => img.isPrimary) || product.productImages?.[0];
-                const fallbackImage = getProductImage(product.productName);
-                
-                return (
-                  <a
-                    key={product.id}
-                    href={`/products/${product.id}`}
-                    className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300 block cursor-pointer animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    {/* Product Image */}
-                    <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-                      {primaryImage ? (
-                        <img
-                          src={primaryImage.imageUrl}
-                          alt={product.productName}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          onError={(e) => {
-                            e.currentTarget.src = fallbackImage;
-                          }}
-                        />
-                      ) : (
-                        <img
-                          src={fallbackImage}
-                          alt={product.productName}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                      )}
-                      {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      {/* Quick View Badge */}
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                        Quick View
-                      </div>
-                    </div>
-                    
-                    {/* Product Info */}
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {product.productName}
-                      </h3>
-                      <div className="flex items-center justify-between mt-4">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                          ₵{product.price.toFixed(2)}
-                        </span>
-                        <span className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-md text-sm transform group-hover:scale-105 transition-transform">
-                          View Details →
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          )}
-          
-          {featuredProducts.length > 0 && (
-            <div className="text-center mt-12">
-              <a
-                href="/products"
-                className="inline-flex items-center px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-600 hover:text-blue-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-              >
-                View All Products
-                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </a>
-            </div>
-          )}
         </div>
       </section>
 

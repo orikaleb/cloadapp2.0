@@ -104,3 +104,4 @@ If you prefer to use Firebase Admin SDK (which bypasses security rules), you nee
    ```
    (Copy the entire JSON content as a string)
 
+

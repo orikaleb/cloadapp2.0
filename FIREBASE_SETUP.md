@@ -148,3 +148,4 @@ After setup, you may need to:
 3. Test all authentication flows
 4. Update admin panel to use Firestore
 
+
