@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="admin@cloudstore.com"
+                  placeholder="Enter your email"
                 />
               </div>
             </div>
@@ -103,12 +103,6 @@ export default function AdminLoginPage() {
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
-            </div>
-
-            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-              <p className="font-semibold mb-1">Demo Credentials:</p>
-              <p>Email: admin@cloudstore.com</p>
-              <p>Password: admin123</p>
             </div>
           </form>
 

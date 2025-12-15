@@ -1,114 +1,247 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import Navigation from '@/components/Navigation';
+import { useRouter } from 'next/navigation';
+import Toast from '@/components/Toast';
 
-// Mock user data - in real app, this would come from API
-const userData = {
-  id: 1,
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe@example.com',
-  phone: '+1 (555) 123-4567',
-  address: {
-    street: '123 Main Street',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States',
-  },
-  preferences: {
-    newsletter: true,
-    smsNotifications: false,
-    emailNotifications: true,
-  },
-  joinDate: '2024-01-15',
-  totalOrders: 12,
-  totalSpent: 2847.50,
+type UserProfile = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  createdAt: string;
 };
 
-const recentOrders = [
-  {
-    id: 'ORD-001',
-    date: '2024-01-20',
-    status: 'Delivered',
-    total: 299.99,
-    items: 2,
-  },
-  {
-    id: 'ORD-002',
-    date: '2024-01-15',
-    status: 'Shipped',
-    total: 149.99,
-    items: 1,
-  },
-  {
-    id: 'ORD-003',
-    date: '2024-01-10',
-    status: 'Processing',
-    total: 79.99,
-    items: 1,
-  },
-];
-
 export default function ProfilePage() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(userData);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+  });
+  const [orders, setOrders] = useState<any[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...(prev[parent as keyof typeof prev] as any),
-          [child]: type === 'checkbox' ? checked : value
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/auth/login?redirect=/profile');
+      return;
+    }
+    fetchProfile();
+    fetchOrders();
+  }, [isAuthenticated, router]);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const authData = localStorage.getItem('userAuth');
+      if (!authData) {
+        router.push('/auth/login');
+        return;
+      }
+
+      const userData = JSON.parse(authData);
+      const userId = userData.id;
+      
+      if (!userId) {
+        setToast({ message: 'User ID not found', type: 'error', isVisible: true });
+        return;
+      }
+
+      // Fetch from API to get latest data from database
+      const response = await fetch(`/api/customers/${userId}`);
+      
+      if (!response.ok) {
+        // Fallback to localStorage data if API fails
+        if (user) {
+          const nameParts = user.name?.split(' ') || ['', ''];
+          setProfile({
+            id: user.id || userData.id || '',
+            name: user.name || '',
+            email: user.email || '',
+            phone: user.phone || null,
+            address: user.address || null,
+            createdAt: userData.createdAt || new Date().toISOString(),
+          });
+          setFormData({
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            address: user.address || '',
+          });
         }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
+        return;
+      }
+
+      const customerData = await response.json();
+      const nameParts = customerData.name?.split(' ') || ['', ''];
+      
+      setProfile({
+        id: customerData.id,
+        name: customerData.name,
+        email: customerData.email,
+        phone: customerData.phone,
+        address: customerData.address,
+        createdAt: customerData.createdAt,
+      });
+      
+      setFormData({
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: customerData.email || '',
+        phone: customerData.phone || '',
+        address: customerData.address || '',
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setToast({ message: 'Failed to load profile', type: 'error', isVisible: true });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSave = () => {
-    // In real app, save to API
-    console.log('Saving profile:', formData);
-    setIsEditing(false);
+  const fetchOrders = async () => {
+    try {
+      const authData = localStorage.getItem('userAuth');
+      if (!authData) return;
+
+      const userData = JSON.parse(authData);
+      const response = await fetch(`/api/orders/my-orders?customerId=${userData.id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const authData = localStorage.getItem('userAuth');
+      if (!authData) {
+        router.push('/auth/login');
+        return;
+      }
+
+      const userData = JSON.parse(authData);
+      const response = await fetch(`/api/customers/${userData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`,
+          phone: formData.phone || null,
+          address: formData.address || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const updated = await response.json();
+      
+      // Update localStorage with new data
+      const updatedAuth = {
+        ...userData,
+        name: updated.name,
+        phone: updated.phone,
+        address: updated.address,
+      };
+      localStorage.setItem('userAuth', JSON.stringify(updatedAuth));
+
+      // Update profile state
+      setProfile({
+        ...profile!,
+        name: updated.name,
+        phone: updated.phone,
+        address: updated.address,
+      });
+
+      // Update form data to reflect saved changes
+      const nameParts = updated.name?.split(' ') || ['', ''];
+      setFormData(prev => ({
+        ...prev,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        phone: updated.phone || '',
+        address: updated.address || '',
+      }));
+
+      setToast({ message: 'Profile updated successfully!', type: 'success', isVisible: true });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      setToast({ message: 'Failed to update profile', type: 'error', isVisible: true });
+    }
   };
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: '👤' },
     { id: 'orders', name: 'Orders', icon: '📦' },
     { id: 'addresses', name: 'Addresses', icon: '📍' },
-    { id: 'preferences', name: 'Preferences', icon: '⚙️' },
   ];
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <a href="/" className="text-xl font-bold text-blue-600">CloudStore</a>
-              <div className="hidden md:flex space-x-6">
-                <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
-                <a href="/products" className="text-gray-600 hover:text-blue-600">Products</a>
-                <a href="/categories" className="text-gray-600 hover:text-blue-600">Categories</a>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/cart" className="text-gray-600 hover:text-blue-600">Cart (0)</a>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded">Sign Out</button>
+  if (!isAuthenticated) {
+    return null; // Will redirect
+  }
+
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <div className="text-gray-600">Loading profile...</div>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
+    );
+  }
+
+  const nameParts = profile.name.split(' ');
+  const displayFirstName = formData.firstName || nameParts[0] || '';
+  const displayLastName = formData.lastName || nameParts.slice(1).join(' ') || '';
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
@@ -122,11 +255,11 @@ export default function ProfilePage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
-                  👤
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3 text-white font-bold">
+                  {displayFirstName.charAt(0).toUpperCase()}
                 </div>
-                <h3 className="font-semibold text-gray-900">{formData.firstName} {formData.lastName}</h3>
-                <p className="text-sm text-gray-600">{formData.email}</p>
+                <h3 className="font-semibold text-gray-900">{profile.name}</h3>
+                <p className="text-sm text-gray-600">{profile.email}</p>
               </div>
 
               <nav className="space-y-2">
@@ -158,7 +291,7 @@ export default function ProfilePage() {
                     <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
                     <button
                       onClick={() => setIsEditing(!isEditing)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
                     >
                       {isEditing ? 'Cancel' : 'Edit Profile'}
                     </button>
@@ -175,7 +308,7 @@ export default function ProfilePage() {
                         value={formData.firstName}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900"
                       />
                     </div>
 
@@ -189,7 +322,7 @@ export default function ProfilePage() {
                         value={formData.lastName}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900"
                       />
                     </div>
 
@@ -201,10 +334,10 @@ export default function ProfilePage() {
                         type="email"
                         name="email"
                         value={formData.email}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        disabled
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
                     </div>
 
                     <div>
@@ -217,7 +350,8 @@ export default function ProfilePage() {
                         value={formData.phone}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        placeholder="Enter your phone number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900"
                       />
                     </div>
                   </div>
@@ -225,14 +359,17 @@ export default function ProfilePage() {
                   {isEditing && (
                     <div className="mt-6 flex justify-end space-x-3">
                       <button
-                        onClick={() => setIsEditing(false)}
-                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                        onClick={() => {
+                          setIsEditing(false);
+                          fetchProfile(); // Reset form data
+                        }}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                       >
                         Save Changes
                       </button>
@@ -242,16 +379,18 @@ export default function ProfilePage() {
                   {/* Account Stats */}
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-gray-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-blue-600">{formData.totalOrders}</div>
+                      <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
                       <div className="text-sm text-gray-600">Total Orders</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-green-600">₵{formData.totalSpent.toFixed(2)}</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        ₵{orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0).toFixed(2)}
+                      </div>
                       <div className="text-sm text-gray-600">Total Spent</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg text-center">
                       <div className="text-2xl font-bold text-purple-600">
-                        {Math.floor((Date.now() - new Date(formData.joinDate).getTime()) / (1000 * 60 * 60 * 24))}
+                        {Math.floor((Date.now() - new Date(profile.createdAt).getTime()) / (1000 * 60 * 60 * 24))}
                       </div>
                       <div className="text-sm text-gray-600">Days as Member</div>
                     </div>
@@ -263,42 +402,45 @@ export default function ProfilePage() {
               {activeTab === 'orders' && (
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-6">Order History</h2>
-                  <div className="space-y-4">
-                    {recentOrders.map((order) => (
-                      <div key={order.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-semibold text-gray-900">Order #{order.id}</h3>
-                            <p className="text-sm text-gray-600">Placed on {order.date}</p>
-                            <p className="text-sm text-gray-600">{order.items} item(s)</p>
+                  {orders.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">📦</div>
+                      <p className="text-gray-600">No orders yet</p>
+                      <a href="/products" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
+                        Start Shopping
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {orders.map((order) => (
+                        <div key={order.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-semibold text-gray-900">Order #{order.id.slice(-8).toUpperCase()}</h3>
+                              <p className="text-sm text-gray-600">Placed on {new Date(order.orderDate).toLocaleDateString()}</p>
+                              <p className="text-sm text-gray-600">{order.orderItems?.length || 0} item(s)</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-gray-900">₵{order.totalAmount?.toFixed(2) || '0.00'}</p>
+                              <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                                order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                                order.status === 'Confirmed' ? 'bg-purple-100 text-purple-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {order.status || 'Pending'}
+                              </span>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-gray-900">₵{order.total.toFixed(2)}</p>
-                            <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                              order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                              order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.status}
-                            </span>
+                          <div className="mt-3 flex space-x-3">
+                            <a href={`/orders`} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                              View Details
+                            </a>
                           </div>
                         </div>
-                        <div className="mt-3 flex space-x-3">
-                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                            View Details
-                          </button>
-                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                            Track Package
-                          </button>
-                          {order.status === 'Delivered' && (
-                            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                              Reorder
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -307,79 +449,72 @@ export default function ProfilePage() {
                 <div>
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-gray-900">Addresses</h2>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                      Add New Address
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      {profile.address ? 'Edit Address' : 'Add Address'}
                     </button>
                   </div>
 
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-semibold text-gray-900">Default Address</h3>
-                      <button className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
-                    </div>
-                    <div className="text-gray-600">
-                      <p>{formData.address.street}</p>
-                      <p>{formData.address.city}, {formData.address.state} {formData.address.zipCode}</p>
-                      <p>{formData.address.country}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Preferences Tab */}
-              {activeTab === 'preferences' && (
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Notification Preferences</h2>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">Email Newsletter</h3>
-                        <p className="text-sm text-gray-600">Receive updates about new products and special offers</p>
+                  {profile.address ? (
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="font-semibold text-gray-900">Default Address</h3>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="text-blue-600 hover:text-blue-700 text-sm"
+                        >
+                          Edit
+                        </button>
                       </div>
-                      <input
-                        type="checkbox"
-                        name="preferences.newsletter"
-                        checked={formData.preferences.newsletter}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">Email Notifications</h3>
-                        <p className="text-sm text-gray-600">Get notified about order updates and account changes</p>
+                      <div className="text-gray-600">
+                        <p>{profile.address}</p>
                       </div>
-                      <input
-                        type="checkbox"
-                        name="preferences.emailNotifications"
-                        checked={formData.preferences.emailNotifications}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
                     </div>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg p-8 text-center">
+                      <p className="text-gray-600 mb-4">No address saved</p>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        Add Address
+                      </button>
+                    </div>
+                  )}
 
-                    <div className="flex items-center justify-between">
+                  {isEditing && (
+                    <div className="mt-6 border-t pt-6">
                       <div>
-                        <h3 className="font-medium text-gray-900">SMS Notifications</h3>
-                        <p className="text-sm text-gray-600">Receive text messages about important updates</p>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Address
+                        </label>
+                        <input
+                          type="text"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleInputChange}
+                          placeholder="Enter your full address"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        />
                       </div>
-                      <input
-                        type="checkbox"
-                        name="preferences.smsNotifications"
-                        checked={formData.preferences.smsNotifications}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
+                      <div className="mt-4 flex justify-end space-x-3">
+                        <button
+                          onClick={() => setIsEditing(false)}
+                          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          Save Address
+                        </button>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-8">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                      Save Preferences
-                    </button>
-                  </div>
+                  )}
                 </div>
               )}
             </div>

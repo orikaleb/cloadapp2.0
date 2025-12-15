@@ -2,13 +2,21 @@
 
 import { useState } from 'react';
 import { useCart } from '@/lib/cart-context';
+import Navigation from '@/components/Navigation';
+import { CartItemSkeleton } from '@/components/LoadingSkeleton';
+import Toast from '@/components/Toast';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, getCartCount } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
 
-  const removeItem = (id: number) => {
+  const removeItem = (id: string | number) => {
     removeFromCart(id);
   };
 
@@ -16,8 +24,9 @@ export default function CartPage() {
     if (promoCode.toLowerCase() === 'save10') {
       setAppliedPromo('SAVE10');
       setPromoCode('');
+      setToast({ message: 'Promo code applied! 10% discount', type: 'success', isVisible: true });
     } else {
-      alert('Invalid promo code');
+      setToast({ message: 'Invalid promo code', type: 'error', isVisible: true });
     }
   };
 
@@ -30,37 +39,24 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        {/* Navigation */}
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-8">
-                <a href="/" className="text-xl font-bold text-blue-600">CloudStore</a>
-                <div className="hidden md:flex space-x-6">
-                  <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
-                  <a href="/products" className="text-gray-600 hover:text-blue-600">Products</a>
-                  <a href="/categories" className="text-gray-600 hover:text-blue-600">Categories</a>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <a href="/cart" className="text-blue-600 font-medium">Cart ({getCartCount()})</a>
-                <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
-              </div>
-            </div>
-          </div>
-        </nav>
-
+        <Navigation />
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={() => setToast({ ...toast, isVisible: false })}
+        />
         {/* Empty Cart */}
         <div className="max-w-4xl mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="text-6xl mb-6">🛒</div>
+          <div className="text-center animate-fade-in">
+            <div className="text-6xl mb-6 animate-bounce">🛒</div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
             <p className="text-lg text-gray-600 mb-8">
               Looks like you haven't added any items to your cart yet.
             </p>
             <a
               href="/products"
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
             >
               Start Shopping
             </a>
@@ -72,25 +68,14 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <a href="/" className="text-xl font-bold text-blue-600">CloudStore</a>
-              <div className="hidden md:flex space-x-6">
-                <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
-                <a href="/products" className="text-gray-600 hover:text-blue-600">Products</a>
-                <a href="/categories" className="text-gray-600 hover:text-blue-600">Categories</a>
-              </div>
-            </div>
-              <div className="flex items-center space-x-4">
-                <a href="/cart" className="text-blue-600 font-medium">Cart ({getCartCount()})</a>
-                <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
-              </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
@@ -106,8 +91,12 @@ export default function CartPage() {
               <div className="p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Cart Items</h2>
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                  {cartItems.map((item, index) => (
+                    <div 
+                      key={item.id} 
+                      className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-white hover:shadow-md transition-all duration-300 animate-fade-in"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
                       {/* Product Image */}
                       <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
                         {item.image}
@@ -123,17 +112,22 @@ export default function CartPage() {
                       </div>
 
                       {/* Quantity Controls */}
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                          className="w-10 h-10 rounded-lg bg-red-500 text-white flex items-center justify-center hover:bg-red-600 active:bg-red-700 font-bold text-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          disabled={item.quantity <= 1}
+                          title="Decrease quantity"
                         >
-                          -
+                          −
                         </button>
-                        <span className="w-8 text-center font-medium">{item.quantity}</span>
+                        <span className="w-12 text-center font-bold text-gray-900 text-lg bg-white rounded px-2 py-1 border border-gray-200">
+                          {item.quantity}
+                        </span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                          className="w-10 h-10 rounded-lg bg-green-500 text-white flex items-center justify-center hover:bg-green-600 active:bg-green-700 font-bold text-lg shadow-md hover:shadow-lg transition-all duration-200"
+                          title="Increase quantity"
                         >
                           +
                         </button>
@@ -148,8 +142,11 @@ export default function CartPage() {
 
                       {/* Remove Button */}
                       <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-red-600 hover:text-red-700 p-1"
+                        onClick={() => {
+                          removeItem(item.id);
+                          setToast({ message: `${item.name} removed from cart`, type: 'info', isVisible: true });
+                        }}
+                        className="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-all transform hover:scale-110 active:scale-95"
                         title="Remove item"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,9 +239,9 @@ export default function CartPage() {
               {/* Checkout Button */}
               <a 
                 href="/checkout"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4 block text-center"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 mb-4 block text-center"
               >
-                Proceed to Checkout
+                Proceed to Checkout →
               </a>
 
               {/* Security Badge */}

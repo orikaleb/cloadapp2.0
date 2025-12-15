@@ -1,36 +1,33 @@
-# E-Commerce Cloud App - Next.js with Prisma
+# E-Commerce Cloud App - Next.js with Firebase
 
-A modern e-commerce Next.js application with Prisma ORM and MongoDB Atlas database.
+A modern e-commerce Next.js application with Firebase (Firestore + Firebase Auth).
 
 ## Features
 
 - ⚡ Next.js 15 with App Router
 - 🎨 Tailwind CSS for styling
-- 🗄️ Prisma ORM with MongoDB Atlas
+- 🔥 Firebase Firestore for database
+- 🔐 Firebase Authentication
 - 📝 TypeScript support
 - 🔧 ESLint configuration
 - 🛒 Complete e-commerce functionality
 
-## Database Models
+## Database
 
-The application includes a comprehensive e-commerce database with 11 models:
+The application uses Firebase Firestore for data storage with the following collections:
 
-### Core Models
-- **Customer**: User accounts with authentication and profile information
-- **Category**: Hierarchical product categories with parent-child relationships
-- **Product**: Product catalog with SKU, pricing, and inventory management
-- **ProductImage**: Multiple images per product with primary image designation
+### Core Collections
+- **customers**: User accounts with authentication and profile information
+- **categories**: Product categories
+- **products**: Product catalog with pricing and inventory management
+- **product_images**: Multiple images per product
 
 ### Order Management
-- **Order**: Customer orders with status tracking and financial details
-- **OrderItem**: Individual products within orders with quantities and pricing
-- **Payment**: Payment transactions with multiple payment methods
-- **Sale**: Completed sales linking orders and payments
-- **Shipment**: Shipping and delivery tracking
-
-### Shopping Experience
-- **ShoppingCart**: Customer shopping carts with session management
-- **CartItem**: Products in shopping carts with quantities
+- **orders**: Customer orders with status tracking and financial details
+- **order_items**: Individual products within orders
+- **payments**: Payment transactions
+- **sales**: Completed sales
+- **shipments**: Shipping and delivery tracking
 
 ## Setup Instructions
 
@@ -42,22 +39,26 @@ npm install
 
 ### 2. Environment Configuration
 
-The application is already configured with your MongoDB Atlas connection:
+Create a `.env.local` file with your Firebase configuration:
 
 ```bash
-# MongoDB Atlas connection string (already configured)
-DATABASE_URL="mongodb+srv://calebotchere014_db_user:odoKFYzz3rhOvnN5@cluster0.sorewns.mongodb.net/cloudapp_db?retryWrites=true&w=majority"
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 ```
 
-### 3. Database Setup
+See `FIREBASE_SETUP.md` for detailed setup instructions.
 
-The MongoDB database is already set up and connected! The e-commerce collections have been created:
+### 3. Firebase Setup
 
-```bash
-# Database is already configured and collections created
-# Collections: customers, categories, products, product_images, orders, order_items, shopping_carts, cart_items, payments, sales, shipments
-# Indexes: customers_email_key, products_sku_key, shopping_carts_customerId_key
-```
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Authentication (Email/Password)
+3. Create Firestore Database
+4. Copy your Firebase config to `.env.local`
 
 ### 4. Development Server
 
@@ -67,26 +68,6 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-### 5. Test Database Connection
-
-Visit [http://localhost:3000/api/test](http://localhost:3000/api/test) to test the database connection.
-
-## Prisma Commands
-
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Push schema changes to MongoDB
-npx prisma db push
-
-# Open Prisma Studio
-npx prisma studio
-
-# View database in MongoDB Atlas
-# Visit: https://cloud.mongodb.com/
-```
-
 ## Project Structure
 
 ```
@@ -95,14 +76,68 @@ src/
 │   ├── api/            # API routes
 │   └── page.tsx        # Home page
 ├── lib/                # Utility functions
-│   └── prisma.ts       # Prisma client configuration
-prisma/
-└── schema.prisma       # Database schema
+│   ├── firebase.ts     # Firebase client configuration
+│   └── firebase-admin.ts # Firebase Admin SDK configuration
 ```
+
+## Deployment
+
+### Prerequisites
+
+1. **Firebase Project**: Set up your Firebase project with Firestore and Authentication
+2. **Environment Variables**: Set up your Firebase environment variables in your deployment platform
+
+### Environment Variables
+
+Set the following in your deployment platform:
+
+```bash
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+```
+
+### Deploy to Vercel (Recommended)
+
+1. **Install Vercel CLI** (optional):
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Deploy via Vercel Dashboard**:
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Add Firebase environment variables
+   - Deploy!
+
+3. **Or deploy via CLI**:
+   ```bash
+   vercel
+   ```
+
+### Build for Production
+
+```bash
+# Build the application
+npm run build
+
+# Start production server
+npm start
+```
+
+### Important Notes
+
+- **Firebase**: Ensure your Firebase project is set up with Firestore and Authentication enabled
+- **Environment Variables**: Never commit `.env.local` to version control
+- **Security Rules**: Configure Firestore security rules in Firebase Console
 
 ## Next Steps
 
-1. Set up your PostgreSQL database
-2. Update the `DATABASE_URL` in `.env.local`
-3. Run `npx prisma migrate dev --name init` to create the database tables
-4. Start building your application features!
+1. Set up your Firebase project
+2. Configure Firestore security rules
+3. Update environment variables in your deployment platform
+4. Deploy and enjoy your e-commerce platform!

@@ -3,16 +3,17 @@ import { NextResponse } from 'next/server'
 // Import the Prisma client instance to interact with the database
 import { prisma } from '@/lib/prisma'
 
-// Define the type for route parameters - expects an object with params containing an id string
-type Params = { params: { id: string } }
+// Define the type for route parameters - expects an object with params containing an id string (async in Next.js 15)
+type Params = { params: Promise<{ id: string }> }
 
 // GET handler: Fetches a single category by its ID
 export async function GET(_request: Request, { params }: Params) {
   try {
+    const { id } = await params;
     // Query the database to find a unique category matching the provided ID
     const category = await prisma.category.findUnique({
       // Specify the search condition: find category where id matches the route parameter
-      where: { id: params.id },
+      where: { id },
     })
     // Check if the category was found in the database
     if (!category) {
@@ -30,12 +31,13 @@ export async function GET(_request: Request, { params }: Params) {
 // PUT handler: Updates an existing category by its ID
 export async function PUT(request: Request, { params }: Params) {
   try {
+    const { id } = await params;
     // Parse the JSON body from the request to get the update data
     const data = await request.json()
     // Update the category in the database with the new data
     const updated = await prisma.category.update({ 
       // Find the category by ID from the route parameter
-      where: { id: params.id }, 
+      where: { id }, 
       // Apply the new data to update the category fields
       data 
     })
@@ -50,10 +52,11 @@ export async function PUT(request: Request, { params }: Params) {
 // DELETE handler: Removes a category from the database by its ID
 export async function DELETE(_request: Request, { params }: Params) {
   try {
+    const { id } = await params;
     // Delete the category from the database matching the provided ID
     const deleted = await prisma.category.delete({ 
       // Specify which category to delete using the route parameter ID
-      where: { id: params.id } 
+      where: { id } 
     })
     // Return the deleted category data as JSON with 200 OK status (default)
     return NextResponse.json(deleted)

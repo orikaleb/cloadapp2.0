@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 type Category = {
   id: string;
@@ -9,8 +9,10 @@ type Category = {
   description?: string | null;
 };
 
-export default function EditCategoryPage({ params }: { params: { id: string } }) {
+export default function EditCategoryPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -20,12 +22,14 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   });
 
   useEffect(() => {
-    fetchCategory();
-  }, [params.id]);
+    if (id) {
+      fetchCategory();
+    }
+  }, [id]);
 
   const fetchCategory = async () => {
     try {
-      const res = await fetch(`/api/categories/${params.id}`);
+      const res = await fetch(`/api/categories/${id}`);
       if (res.ok) {
         const data = await res.json();
         setCategory(data);
@@ -61,7 +65,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         description: formData.description || null,
       };
 
-      const res = await fetch(`/api/categories/${params.id}`, {
+      const res = await fetch(`/api/categories/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryData),

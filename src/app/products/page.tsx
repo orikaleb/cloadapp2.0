@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart-context';
+import Navigation from '@/components/Navigation';
+import { ProductGridSkeleton } from '@/components/LoadingSkeleton';
+import Toast from '@/components/Toast';
 
 // Type definitions for API data
 type ApiProduct = {
@@ -53,12 +56,15 @@ const getProductEmoji = (productName: string, categoryName?: string): string => 
   if (name.includes('coffee')) return '☕';
   if (name.includes('console') || name.includes('gaming')) return '🎮';
   if (name.includes('mouse')) return '🖱️';
-  if (name.includes('cable') || name.includes('charger')) return '🔌';
+  if (name.includes('cable') || name.includes('charger') || name.includes('power bank')) return '🔌';
   if (name.includes('tablet') || name.includes('phone')) return '📱';
   if (name.includes('camera') || name.includes('webcam')) return '📹';
+  if (name.includes('monitor') || name.includes('screen')) return '🖥️';
   if (name.includes('keyboard')) return '⌨️';
   if (name.includes('jean')) return '👖';
   if (name.includes('sunglass')) return '🕶️';
+  if (name.includes('hoodie') || name.includes('sweatshirt')) return '👕';
+  if (name.includes('sneaker') || name.includes('sneakers')) return '👟';
   if (name.includes('backpack') || name.includes('bag')) return '🎒';
   if (name.includes('jacket')) return '🧥';
   if (name.includes('shirt') && !name.includes('t-shirt')) return '👔';
@@ -67,6 +73,7 @@ const getProductEmoji = (productName: string, categoryName?: string): string => 
   if (name.includes('lamp') || name.includes('light')) return '💡';
   if (name.includes('pillow')) return '🛋️';
   if (name.includes('plant') || name.includes('pot')) return '🪴';
+  if (name.includes('rug') || name.includes('carpet')) return '🪑';
   if (name.includes('vacuum') || name.includes('cleaner')) return '🧹';
   if (name.includes('clock')) return '🕐';
   if (name.includes('chair')) return '🪑';
@@ -83,36 +90,37 @@ const STATIC_CATEGORIES = [
 ];
 
 const STATIC_PRODUCTS: DisplayProduct[] = [
-  { id: 1, name: 'Wireless Headphones', price: 199.99, category: 'electronics', categoryId: 'electronics', image: '🎧', rating: 4.5, reviews: 128, inStock: true },
-  { id: 2, name: 'Smart Watch', price: 299.99, category: 'electronics', categoryId: 'electronics', image: '⌚', rating: 4.8, reviews: 89, inStock: true },
-  { id: 3, name: 'Laptop Stand', price: 79.99, category: 'electronics', categoryId: 'electronics', image: '💻', rating: 4.3, reviews: 45, inStock: true },
-  { id: 4, name: 'Bluetooth Speaker', price: 129.99, category: 'electronics', categoryId: 'electronics', image: '🔊', rating: 4.6, reviews: 67, inStock: true },
-  { id: 5, name: 'Designer T-Shirt', price: 49.99, category: 'fashion', categoryId: 'fashion', image: '👕', rating: 4.4, reviews: 23, inStock: true },
-  { id: 6, name: 'Running Shoes', price: 149.99, category: 'fashion', categoryId: 'fashion', image: '👟', rating: 4.7, reviews: 156, inStock: true },
-  { id: 7, name: 'Coffee Maker', price: 89.99, category: 'home', categoryId: 'home', image: '☕', rating: 4.2, reviews: 34, inStock: true },
-  { id: 8, name: 'Gaming Console', price: 499.99, category: 'gaming', categoryId: 'gaming', image: '🎮', rating: 4.9, reviews: 203, inStock: false },
-  { id: 9, name: 'Wireless Mouse', price: 39.99, category: 'electronics', categoryId: 'electronics', image: '🖱️', rating: 4.5, reviews: 92, inStock: true },
-  { id: 10, name: 'USB-C Cable', price: 19.99, category: 'electronics', categoryId: 'electronics', image: '🔌', rating: 4.3, reviews: 156, inStock: true },
-  { id: 11, name: 'Tablet', price: 349.99, category: 'electronics', categoryId: 'electronics', image: '📱', rating: 4.6, reviews: 78, inStock: true },
-  { id: 12, name: 'Webcam HD', price: 69.99, category: 'electronics', categoryId: 'electronics', image: '📹', rating: 4.4, reviews: 134, inStock: true },
-  { id: 13, name: 'Mechanical Keyboard', price: 119.99, category: 'electronics', categoryId: 'electronics', image: '⌨️', rating: 4.7, reviews: 201, inStock: true },
-  { id: 14, name: 'Jeans', price: 79.99, category: 'fashion', categoryId: 'fashion', image: '👖', rating: 4.5, reviews: 167, inStock: true },
-  { id: 15, name: 'Sunglasses', price: 59.99, category: 'fashion', categoryId: 'fashion', image: '🕶️', rating: 4.6, reviews: 89, inStock: true },
-  { id: 16, name: 'Backpack', price: 89.99, category: 'fashion', categoryId: 'fashion', image: '🎒', rating: 4.4, reviews: 112, inStock: true },
-  { id: 17, name: 'Leather Jacket', price: 249.99, category: 'fashion', categoryId: 'fashion', image: '🧥', rating: 4.8, reviews: 45, inStock: true },
-  { id: 18, name: 'Dress Shirt', price: 64.99, category: 'fashion', categoryId: 'fashion', image: '👔', rating: 4.3, reviews: 78, inStock: true },
-  { id: 19, name: 'Winter Boots', price: 179.99, category: 'fashion', categoryId: 'fashion', image: '🥾', rating: 4.6, reviews: 93, inStock: true },
-  { id: 20, name: 'Baseball Cap', price: 24.99, category: 'fashion', categoryId: 'fashion', image: '🧢', rating: 4.2, reviews: 201, inStock: true },
-  { id: 21, name: 'Air Purifier', price: 159.99, category: 'home', categoryId: 'home', image: '💨', rating: 4.5, reviews: 67, inStock: true },
-  { id: 22, name: 'Desk Lamp', price: 34.99, category: 'home', categoryId: 'home', image: '💡', rating: 4.4, reviews: 145, inStock: true },
-  { id: 23, name: 'Throw Pillow', price: 29.99, category: 'home', categoryId: 'home', image: '🛋️', rating: 4.3, reviews: 89, inStock: true },
-  { id: 24, name: 'Plant Pot', price: 19.99, category: 'home', categoryId: 'home', image: '🪴', rating: 4.6, reviews: 123, inStock: true },
-  { id: 25, name: 'Vacuum Cleaner', price: 199.99, category: 'home', categoryId: 'home', image: '🧹', rating: 4.7, reviews: 156, inStock: true },
-  { id: 26, name: 'Wall Clock', price: 44.99, category: 'home', categoryId: 'home', image: '🕐', rating: 4.2, reviews: 67, inStock: true },
-  { id: 27, name: 'Gaming Mouse', price: 79.99, category: 'gaming', categoryId: 'gaming', image: '🖱️', rating: 4.8, reviews: 234, inStock: true },
-  { id: 28, name: 'Gaming Headset', price: 149.99, category: 'gaming', categoryId: 'gaming', image: '🎧', rating: 4.7, reviews: 189, inStock: true },
-  { id: 29, name: 'Gaming Chair', price: 299.99, category: 'gaming', categoryId: 'gaming', image: '🪑', rating: 4.6, reviews: 98, inStock: true },
-  { id: 30, name: 'Gaming Keyboard', price: 129.99, category: 'gaming', categoryId: 'gaming', image: '⌨️', rating: 4.9, reviews: 267, inStock: true },
+  { id: 1, name: 'Wireless Headphones', price: 199.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop', rating: 4.5, reviews: 128, inStock: true },
+  { id: 2, name: 'Smart Watch', price: 299.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop', rating: 4.8, reviews: 89, inStock: true },
+  { id: 3, name: 'Laptop Stand', price: 79.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&h=500&fit=crop', rating: 4.3, reviews: 45, inStock: true },
+  { id: 4, name: 'Bluetooth Speaker', price: 129.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&h=500&fit=crop', rating: 4.6, reviews: 67, inStock: true },
+  { id: 5, name: 'Designer T-Shirt', price: 49.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop', rating: 4.4, reviews: 23, inStock: true },
+  { id: 6, name: 'Running Shoes', price: 149.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop', rating: 4.7, reviews: 156, inStock: true },
+  { id: 7, name: 'Coffee Maker', price: 89.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=500&h=500&fit=crop', rating: 4.2, reviews: 34, inStock: true },
+  { id: 8, name: 'Gaming Console', price: 499.99, category: 'gaming', categoryId: 'gaming', image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=500&h=500&fit=crop', rating: 4.9, reviews: 203, inStock: false },
+  { id: 9, name: 'Wireless Mouse', price: 39.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=500&h=500&fit=crop', rating: 4.5, reviews: 92, inStock: true },
+  // Use the same known-working image as Wireless Mouse so the Power Bank image always shows
+  { id: 10, name: 'Power Bank', price: 39.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=500&h=500&fit=crop', rating: 4.5, reviews: 203, inStock: true },
+  { id: 11, name: 'Tablet', price: 349.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500&h=500&fit=crop', rating: 4.6, reviews: 78, inStock: true },
+  { id: 12, name: 'Monitor', price: 249.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&h=500&fit=crop', rating: 4.6, reviews: 167, inStock: true },
+  { id: 13, name: 'Mechanical Keyboard', price: 119.99, category: 'electronics', categoryId: 'electronics', image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=500&h=500&fit=crop', rating: 4.7, reviews: 201, inStock: true },
+  { id: 14, name: 'Jeans', price: 79.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&h=500&fit=crop', rating: 4.5, reviews: 167, inStock: true },
+  { id: 15, name: 'Sunglasses', price: 59.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&h=500&fit=crop', rating: 4.6, reviews: 89, inStock: true },
+  { id: 16, name: 'Backpack', price: 89.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop', rating: 4.4, reviews: 112, inStock: true },
+  { id: 17, name: 'Leather Jacket', price: 249.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=500&fit=crop', rating: 4.8, reviews: 45, inStock: true },
+  { id: 18, name: 'Hoodie', price: 79.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&h=500&fit=crop', rating: 4.5, reviews: 134, inStock: true },
+  { id: 19, name: 'Sneakers', price: 129.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop', rating: 4.7, reviews: 245, inStock: true },
+  { id: 20, name: 'Baseball Cap', price: 24.99, category: 'fashion', categoryId: 'fashion', image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&h=500&fit=crop', rating: 4.2, reviews: 201, inStock: true },
+  { id: 21, name: 'Air Purifier', price: 159.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&h=500&fit=crop', rating: 4.5, reviews: 67, inStock: true },
+  { id: 22, name: 'Desk Lamp', price: 34.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&h=500&fit=crop', rating: 4.4, reviews: 145, inStock: true },
+  { id: 23, name: 'Area Rug', price: 149.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=500&h=500&fit=crop', rating: 4.4, reviews: 112, inStock: true },
+  { id: 24, name: 'Plant Pot', price: 19.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500&h=500&fit=crop', rating: 4.6, reviews: 123, inStock: true },
+  { id: 25, name: 'Vacuum Cleaner', price: 199.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop', rating: 4.7, reviews: 156, inStock: true },
+  { id: 26, name: 'Wall Clock', price: 44.99, category: 'home', categoryId: 'home', image: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?w=500&h=500&fit=crop', rating: 4.2, reviews: 67, inStock: true },
+  { id: 27, name: 'Gaming Mouse', price: 79.99, category: 'gaming', categoryId: 'gaming', image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=500&h=500&fit=crop', rating: 4.8, reviews: 234, inStock: true },
+  { id: 28, name: 'Gaming Headset', price: 149.99, category: 'gaming', categoryId: 'gaming', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop', rating: 4.7, reviews: 189, inStock: true },
+  { id: 29, name: 'Gaming Chair', price: 299.99, category: 'gaming', categoryId: 'gaming', image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=500&h=500&fit=crop', rating: 4.6, reviews: 98, inStock: true },
+  { id: 30, name: 'Gaming Keyboard', price: 129.99, category: 'gaming', categoryId: 'gaming', image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=500&h=500&fit=crop', rating: 4.9, reviews: 267, inStock: true },
 ];
 
 const buildCategoryList = (combinedProducts: DisplayProduct[], apiCategories: ApiCategory[]) => {
@@ -172,6 +180,11 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('name');
   const [searchQuery, setSearchQuery] = useState('');
   const [addedToCart, setAddedToCart] = useState<string | number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
 
   // Fetch products and categories from API
   useEffect(() => {
@@ -242,29 +255,16 @@ export default function ProductsPage() {
     }
   });
 
+  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
+    setToast({ message, type, isVisible: true });
+  };
+
   if (loading && products.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-8">
-                <a href="/" className="text-xl font-bold text-blue-600">CloudStore</a>
-                <div className="hidden md:flex space-x-6">
-                  <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
-                  <a href="/products" className="text-blue-600 font-medium">Products</a>
-                  <a href="/categories" className="text-gray-600 hover:text-blue-600">Categories</a>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <a href="/cart" className="text-gray-600 hover:text-blue-600">Cart ({getCartCount()})</a>
-                <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navigation />
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center py-20 text-gray-600">Loading products...</div>
+          <ProductGridSkeleton count={12} />
         </div>
       </div>
     );
@@ -272,31 +272,20 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <a href="/" className="text-xl font-bold text-blue-600">CloudStore</a>
-              <div className="hidden md:flex space-x-6">
-                <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
-                <a href="/products" className="text-blue-600 font-medium">Products</a>
-                <a href="/categories" className="text-gray-600 hover:text-blue-600">Categories</a>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/cart" className="text-gray-600 hover:text-blue-600">Cart ({getCartCount()})</a>
-              <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="w-full py-8">
+        <div className="flex flex-col lg:flex-row gap-0">
           {/* Sidebar Filters */}
-          <div className="lg:w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+          <div className="lg:w-56 flex-shrink-0 lg:pl-0 lg:pr-4">
+            <div className="bg-white rounded-lg shadow-md p-5 space-y-5 sticky top-24 animate-fade-in ml-0">
               {/* Search */}
               <div>
                 <h3 className="font-semibold mb-3">Search</h3>
@@ -355,7 +344,7 @@ export default function ProductsPage() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0 lg:px-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <div>
@@ -370,7 +359,7 @@ export default function ProductsPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 >
                   <option value="name">Sort by Name</option>
                   <option value="price-low">Price: Low to High</option>
@@ -381,10 +370,15 @@ export default function ProductsPage() {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedProducts.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-48 bg-gray-100 flex items-center justify-center text-4xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {sortedProducts.map((product, index) => (
+                <a 
+                  key={product.id} 
+                  href={`/products/${product.id}`}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 block group animate-fade-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <div className="h-48 bg-gray-100 flex items-center justify-center text-4xl overflow-hidden">
                     {typeof product.image === 'string' &&
                     (product.image.startsWith('http://') ||
                       product.image.startsWith('https://') ||
@@ -392,14 +386,14 @@ export default function ProductsPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
-                      product.image || '📦'
+                      <span className="group-hover:scale-110 transition-transform duration-300">{product.image || '📦'}</span>
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{product.name}</h3>
                     
                     {/* Rating */}
                     <div className="flex items-center mb-2">
@@ -418,24 +412,33 @@ export default function ProductsPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-blue-600">₵{product.price}</span>
                       <button 
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           if (product.inStock) {
-                            addToCart({
+                            const added = addToCart({
                               id: product.id,
                               name: product.name,
                               price: product.price,
                               image: product.image,
                               inStock: product.inStock,
-                            });
-                            setAddedToCart(product.id);
-                            setTimeout(() => setAddedToCart(null), 2000);
+                            }, true);
+                            if (added) {
+                              setAddedToCart(product.id);
+                              showToast(`${product.name} added to cart!`, 'success');
+                              setTimeout(() => setAddedToCart(null), 2000);
+                            } else {
+                              showToast('Please sign in to add items to cart', 'info');
+                            }
+                          } else {
+                            showToast('Product is out of stock', 'error');
                           }
                         }}
-                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-all transform ${
                           product.inStock
                             ? addedToCart === product.id
-                              ? 'bg-green-600 text-white'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                              ? 'bg-green-600 text-white scale-105'
+                              : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95'
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         }`}
                         disabled={!product.inStock}
@@ -444,7 +447,7 @@ export default function ProductsPage() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
 

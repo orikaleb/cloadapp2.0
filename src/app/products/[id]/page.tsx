@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart-context';
+import Navigation from '@/components/Navigation';
+import Toast from '@/components/Toast';
+import { getProductImage } from '@/lib/product-images';
 
 // Type definitions for API data
 type ApiProduct = {
@@ -55,9 +58,8 @@ const getProductEmoji = (productName: string, categoryName?: string): string => 
   return '📦'; // Default emoji
 };
 
-// Legacy mock data for backward compatibility (will be removed once all products are in DB)
-const getProduct = (id: string) => {
-  const products: Record<string, any> = {
+// Static products data - matches STATIC_PRODUCTS from products page
+const STATIC_PRODUCTS_DATA: Record<string, any> = {
     '1': {
       id: 1,
       name: 'Wireless Headphones',
@@ -86,11 +88,11 @@ const getProduct = (id: string) => {
         'Frequency Response': '20Hz - 20kHz',
         'Impedance': '32 ohms'
       },
-      images: ['🎧', '🎧', '🎧', '🎧'],
+      images: [getProductImage('Wireless Headphones'), getProductImage('Wireless Headphones'), getProductImage('Wireless Headphones'), getProductImage('Wireless Headphones')],
       relatedProducts: [
-        { id: 2, name: 'Smart Watch', price: 299.99, image: '⌚' },
-        { id: 4, name: 'Bluetooth Speaker', price: 129.99, image: '🔊' },
-        { id: 3, name: 'Laptop Stand', price: 79.99, image: '💻' },
+        { id: 2, name: 'Smart Watch', price: 299.99, image: getProductImage('Smart Watch') },
+        { id: 4, name: 'Bluetooth Speaker', price: 129.99, image: getProductImage('Bluetooth Speaker') },
+        { id: 3, name: 'Laptop Stand', price: 79.99, image: getProductImage('Laptop Stand') },
       ]
     },
     '2': {
@@ -120,11 +122,11 @@ const getProduct = (id: string) => {
         'Weight': '45g',
         'Compatibility': 'iOS & Android'
       },
-      images: ['⌚', '⌚', '⌚', '⌚'],
+      images: [getProductImage('Smart Watch'), getProductImage('Smart Watch'), getProductImage('Smart Watch'), getProductImage('Smart Watch')],
       relatedProducts: [
-        { id: 1, name: 'Wireless Headphones', price: 199.99, image: '🎧' },
-        { id: 11, name: 'Tablet', price: 349.99, image: '📱' },
-        { id: 9, name: 'Wireless Mouse', price: 39.99, image: '🖱️' },
+        { id: 1, name: 'Wireless Headphones', price: 199.99, image: getProductImage('Wireless Headphones') },
+        { id: 11, name: 'Tablet', price: 349.99, image: getProductImage('Tablet') },
+        { id: 9, name: 'Wireless Mouse', price: 39.99, image: getProductImage('Wireless Mouse') },
       ]
     },
     '3': {
@@ -154,11 +156,11 @@ const getProduct = (id: string) => {
         'Compatibility': 'All laptops',
         'Color': 'Silver'
       },
-      images: ['💻', '💻', '💻', '💻'],
+      images: [getProductImage('Laptop Stand'), getProductImage('Laptop Stand'), getProductImage('Laptop Stand'), getProductImage('Laptop Stand')],
       relatedProducts: [
-        { id: 13, name: 'Mechanical Keyboard', price: 119.99, image: '⌨️' },
-        { id: 9, name: 'Wireless Mouse', price: 39.99, image: '🖱️' },
-        { id: 22, name: 'Desk Lamp', price: 34.99, image: '💡' },
+        { id: 13, name: 'Mechanical Keyboard', price: 119.99, image: getProductImage('Mechanical Keyboard') },
+        { id: 9, name: 'Wireless Mouse', price: 39.99, image: getProductImage('Wireless Mouse') },
+        { id: 22, name: 'Desk Lamp', price: 34.99, image: getProductImage('Desk Lamp') },
       ]
     },
     '4': {
@@ -188,11 +190,11 @@ const getProduct = (id: string) => {
         'Dimensions': '18x7x7cm',
         'Power': '20W'
       },
-      images: ['🔊', '🔊', '🔊', '🔊'],
+      images: [getProductImage('Bluetooth Speaker'), getProductImage('Bluetooth Speaker'), getProductImage('Bluetooth Speaker'), getProductImage('Bluetooth Speaker')],
       relatedProducts: [
-        { id: 1, name: 'Wireless Headphones', price: 199.99, image: '🎧' },
-        { id: 28, name: 'Gaming Headset', price: 149.99, image: '🎧' },
-        { id: 10, name: 'USB-C Cable', price: 19.99, image: '🔌' },
+        { id: 1, name: 'Wireless Headphones', price: 199.99, image: getProductImage('Wireless Headphones') },
+        { id: 28, name: 'Gaming Headset', price: 149.99, image: getProductImage('Gaming Headset') },
+        { id: 10, name: 'Power Bank', price: 39.99, image: getProductImage('Power Bank') },
       ]
     },
     '6': {
@@ -222,11 +224,11 @@ const getProduct = (id: string) => {
         'Outsole': 'Rubber',
         'Sizes': '6-13'
       },
-      images: ['👟', '👟', '👟', '👟'],
+      images: [getProductImage('Running Shoes'), getProductImage('Running Shoes'), getProductImage('Running Shoes'), getProductImage('Running Shoes')],
       relatedProducts: [
-        { id: 5, name: 'Designer T-Shirt', price: 49.99, image: '👕' },
-        { id: 19, name: 'Winter Boots', price: 179.99, image: '🥾' },
-        { id: 16, name: 'Backpack', price: 89.99, image: '🎒' },
+        { id: 5, name: 'Designer T-Shirt', price: 49.99, image: getProductImage('Designer T-Shirt') },
+        { id: 19, name: 'Sneakers', price: 129.99, image: getProductImage('Sneakers') },
+        { id: 16, name: 'Backpack', price: 89.99, image: getProductImage('Backpack') },
       ]
     },
     '8': {
@@ -256,11 +258,11 @@ const getProduct = (id: string) => {
         'Video Output': '8K',
         'Connectivity': 'WiFi 6, Bluetooth 5.1'
       },
-      images: ['🎮', '🎮', '🎮', '🎮'],
+      images: [getProductImage('Gaming Console'), getProductImage('Gaming Console'), getProductImage('Gaming Console'), getProductImage('Gaming Console')],
       relatedProducts: [
-        { id: 27, name: 'Gaming Mouse', price: 79.99, image: '🖱️' },
-        { id: 30, name: 'Gaming Keyboard', price: 129.99, image: '⌨️' },
-        { id: 29, name: 'Gaming Chair', price: 299.99, image: '🪑' },
+        { id: 27, name: 'Gaming Mouse', price: 79.99, image: getProductImage('Gaming Mouse') },
+        { id: 30, name: 'Gaming Keyboard', price: 129.99, image: getProductImage('Gaming Keyboard') },
+        { id: 29, name: 'Gaming Chair', price: 299.99, image: getProductImage('Gaming Chair') },
       ]
     },
     '9': {
@@ -290,11 +292,11 @@ const getProduct = (id: string) => {
         'Weight': '85g',
         'Compatibility': 'Windows, Mac, Linux'
       },
-      images: ['🖱️', '🖱️', '🖱️', '🖱️'],
+      images: [getProductImage('Wireless Mouse'), getProductImage('Wireless Mouse'), getProductImage('Wireless Mouse'), getProductImage('Wireless Mouse')],
       relatedProducts: [
-        { id: 13, name: 'Mechanical Keyboard', price: 119.99, image: '⌨️' },
-        { id: 3, name: 'Laptop Stand', price: 79.99, image: '💻' },
-        { id: 10, name: 'USB-C Cable', price: 19.99, image: '🔌' },
+        { id: 13, name: 'Mechanical Keyboard', price: 119.99, image: getProductImage('Mechanical Keyboard') },
+        { id: 3, name: 'Laptop Stand', price: 79.99, image: getProductImage('Laptop Stand') },
+        { id: 10, name: 'Power Bank', price: 39.99, image: getProductImage('Power Bank') },
       ]
     },
     '13': {
@@ -324,11 +326,11 @@ const getProduct = (id: string) => {
         'Weight': '1.2kg',
         'Dimensions': '44x13x4cm'
       },
-      images: ['⌨️', '⌨️', '⌨️', '⌨️'],
+      images: [getProductImage('Mechanical Keyboard'), getProductImage('Mechanical Keyboard'), getProductImage('Mechanical Keyboard'), getProductImage('Mechanical Keyboard')],
       relatedProducts: [
-        { id: 9, name: 'Wireless Mouse', price: 39.99, image: '🖱️' },
-        { id: 3, name: 'Laptop Stand', price: 79.99, image: '💻' },
-        { id: 12, name: 'Webcam HD', price: 69.99, image: '📹' },
+        { id: 9, name: 'Wireless Mouse', price: 39.99, image: getProductImage('Wireless Mouse') },
+        { id: 3, name: 'Laptop Stand', price: 79.99, image: getProductImage('Laptop Stand') },
+        { id: 12, name: 'Monitor', price: 249.99, image: getProductImage('Monitor') },
       ]
     },
     '14': {
@@ -358,11 +360,11 @@ const getProduct = (id: string) => {
         'Sizes': '28-40',
         'Care': 'Machine wash'
       },
-      images: ['👖', '👖', '👖', '👖'],
+      images: [getProductImage('Jeans'), getProductImage('Jeans'), getProductImage('Jeans'), getProductImage('Jeans')],
       relatedProducts: [
-        { id: 5, name: 'Designer T-Shirt', price: 49.99, image: '👕' },
-        { id: 18, name: 'Dress Shirt', price: 64.99, image: '👔' },
-        { id: 17, name: 'Leather Jacket', price: 249.99, image: '🧥' },
+        { id: 5, name: 'Designer T-Shirt', price: 49.99, image: getProductImage('Designer T-Shirt') },
+        { id: 18, name: 'Hoodie', price: 79.99, image: getProductImage('Hoodie') },
+        { id: 17, name: 'Leather Jacket', price: 249.99, image: getProductImage('Leather Jacket') },
       ]
     },
     '27': {
@@ -392,11 +394,11 @@ const getProduct = (id: string) => {
         'Weight': '95g',
         'Polling Rate': '1000Hz'
       },
-      images: ['🖱️', '🖱️', '🖱️', '🖱️'],
+      images: [getProductImage('Wireless Mouse'), getProductImage('Wireless Mouse'), getProductImage('Wireless Mouse'), getProductImage('Wireless Mouse')],
       relatedProducts: [
-        { id: 30, name: 'Gaming Keyboard', price: 129.99, image: '⌨️' },
-        { id: 28, name: 'Gaming Headset', price: 149.99, image: '🎧' },
-        { id: 8, name: 'Gaming Console', price: 499.99, image: '🎮' },
+        { id: 30, name: 'Gaming Keyboard', price: 129.99, image: getProductImage('Gaming Keyboard') },
+        { id: 28, name: 'Gaming Headset', price: 149.99, image: getProductImage('Gaming Headset') },
+        { id: 8, name: 'Gaming Console', price: 499.99, image: getProductImage('Gaming Console') },
       ]
     },
     '30': {
@@ -426,18 +428,99 @@ const getProduct = (id: string) => {
         'Weight': '1.3kg',
         'Response Time': '1ms'
       },
-      images: ['⌨️', '⌨️', '⌨️', '⌨️'],
+      images: [getProductImage('Mechanical Keyboard'), getProductImage('Mechanical Keyboard'), getProductImage('Mechanical Keyboard'), getProductImage('Mechanical Keyboard')],
       relatedProducts: [
-        { id: 27, name: 'Gaming Mouse', price: 79.99, image: '🖱️' },
-        { id: 28, name: 'Gaming Headset', price: 149.99, image: '🎧' },
-        { id: 29, name: 'Gaming Chair', price: 299.99, image: '🪑' },
+        { id: 27, name: 'Gaming Mouse', price: 79.99, image: getProductImage('Gaming Mouse') },
+        { id: 28, name: 'Gaming Headset', price: 149.99, image: getProductImage('Gaming Headset') },
+        { id: 29, name: 'Gaming Chair', price: 299.99, image: getProductImage('Gaming Chair') },
       ]
     }
   };
-  return products[id] || null;
+
+// Function to get product from static data
+const getProduct = (id: string | number): any => {
+  const idStr = String(id);
+  const products = STATIC_PRODUCTS_DATA;
+  
+  // If product not found in detailed data, generate from static product list
+  const staticProductsList = [
+    { id: 1, name: 'Wireless Headphones', price: 199.99, category: 'Electronics', brand: 'AudioTech', image: getProductImage('Wireless Headphones'), inStock: true, stockCount: 15 },
+    { id: 2, name: 'Smart Watch', price: 299.99, category: 'Electronics', brand: 'TechWear', image: getProductImage('Smart Watch'), inStock: true, stockCount: 22 },
+    { id: 3, name: 'Laptop Stand', price: 79.99, category: 'Electronics', brand: 'ErgoDesk', image: getProductImage('Laptop Stand'), inStock: true, stockCount: 30 },
+    { id: 4, name: 'Bluetooth Speaker', price: 129.99, category: 'Electronics', brand: 'SoundWave', image: getProductImage('Bluetooth Speaker'), inStock: true, stockCount: 18 },
+    { id: 5, name: 'Designer T-Shirt', price: 49.99, category: 'Fashion', brand: 'FashionCo', image: getProductImage('Designer T-Shirt'), inStock: true, stockCount: 50 },
+    { id: 6, name: 'Running Shoes', price: 149.99, category: 'Fashion', brand: 'SportMax', image: getProductImage('Running Shoes'), inStock: true, stockCount: 25 },
+    { id: 7, name: 'Coffee Maker', price: 89.99, category: 'Home & Garden', brand: 'BrewMaster', image: getProductImage('Coffee Maker'), inStock: true, stockCount: 20 },
+    { id: 8, name: 'Gaming Console', price: 499.99, category: 'Gaming', brand: 'GamePro', image: getProductImage('Gaming Console'), inStock: false, stockCount: 0 },
+    { id: 9, name: 'Wireless Mouse', price: 39.99, category: 'Electronics', brand: 'ClickTech', image: getProductImage('Wireless Mouse'), inStock: true, stockCount: 50 },
+    { id: 10, name: 'Power Bank', price: 39.99, category: 'Electronics', brand: 'PowerTech', image: getProductImage('Power Bank'), inStock: true, stockCount: 75 },
+    { id: 11, name: 'Tablet', price: 349.99, category: 'Electronics', brand: 'TechTab', image: getProductImage('Tablet'), inStock: true, stockCount: 15 },
+    { id: 12, name: 'Monitor', price: 249.99, category: 'Electronics', brand: 'DisplayPro', image: getProductImage('Monitor'), inStock: true, stockCount: 25 },
+    { id: 13, name: 'Mechanical Keyboard', price: 119.99, category: 'Electronics', brand: 'KeyMaster', image: getProductImage('Mechanical Keyboard'), inStock: true, stockCount: 35 },
+    { id: 14, name: 'Jeans', price: 79.99, category: 'Fashion', brand: 'DenimCo', image: getProductImage('Jeans'), inStock: true, stockCount: 40 },
+    { id: 15, name: 'Sunglasses', price: 59.99, category: 'Fashion', brand: 'SunStyle', image: getProductImage('Sunglasses'), inStock: true, stockCount: 35 },
+    { id: 16, name: 'Backpack', price: 89.99, category: 'Fashion', brand: 'PackPro', image: getProductImage('Backpack'), inStock: true, stockCount: 28 },
+    { id: 17, name: 'Leather Jacket', price: 249.99, category: 'Fashion', brand: 'LeatherLux', image: getProductImage('Leather Jacket'), inStock: true, stockCount: 12 },
+    { id: 18, name: 'Hoodie', price: 79.99, category: 'Fashion', brand: 'ComfortWear', image: getProductImage('Hoodie'), inStock: true, stockCount: 60 },
+    { id: 19, name: 'Sneakers', price: 129.99, category: 'Fashion', brand: 'ShoeMax', image: getProductImage('Sneakers'), inStock: true, stockCount: 35 },
+    { id: 20, name: 'Baseball Cap', price: 24.99, category: 'Fashion', brand: 'CapStyle', image: getProductImage('Baseball Cap'), inStock: true, stockCount: 60 },
+    { id: 21, name: 'Air Purifier', price: 159.99, category: 'Home & Garden', brand: 'AirClean', image: getProductImage('Air Purifier'), inStock: true, stockCount: 18 },
+    { id: 22, name: 'Desk Lamp', price: 34.99, category: 'Home & Garden', brand: 'LightPro', image: getProductImage('Desk Lamp'), inStock: true, stockCount: 40 },
+    { id: 23, name: 'Area Rug', price: 149.99, category: 'Home & Garden', brand: 'HomeDecor', image: getProductImage('Area Rug'), inStock: true, stockCount: 15 },
+    { id: 24, name: 'Plant Pot', price: 19.99, category: 'Home & Garden', brand: 'GardenPro', image: getProductImage('Plant Pot'), inStock: true, stockCount: 75 },
+    { id: 25, name: 'Vacuum Cleaner', price: 199.99, category: 'Home & Garden', brand: 'CleanTech', image: getProductImage('Vacuum Cleaner'), inStock: true, stockCount: 15 },
+    { id: 26, name: 'Wall Clock', price: 44.99, category: 'Home & Garden', brand: 'TimeStyle', image: getProductImage('Wall Clock'), inStock: true, stockCount: 30 },
+    { id: 27, name: 'Gaming Mouse', price: 79.99, category: 'Gaming', brand: 'GameTech', image: getProductImage('Gaming Mouse'), inStock: true, stockCount: 28 },
+    { id: 28, name: 'Gaming Headset', price: 149.99, category: 'Gaming', brand: 'GameTech', image: getProductImage('Gaming Headset'), inStock: true, stockCount: 22 },
+    { id: 29, name: 'Gaming Chair', price: 299.99, category: 'Gaming', brand: 'GameTech', image: getProductImage('Gaming Chair'), inStock: true, stockCount: 10 },
+    { id: 30, name: 'Gaming Keyboard', price: 129.99, category: 'Gaming', brand: 'GameTech', image: getProductImage('Gaming Keyboard'), inStock: true, stockCount: 32 },
+  ];
+  
+  // Check if product exists in detailed data
+  if (products[idStr]) {
+    return products[idStr];
+  }
+  
+  // Otherwise, generate from static list
+  const staticProduct = staticProductsList.find(p => String(p.id) === idStr);
+  if (staticProduct) {
+    return {
+      id: staticProduct.id,
+      name: staticProduct.name,
+      price: staticProduct.price,
+      originalPrice: null,
+      category: staticProduct.category,
+      brand: staticProduct.brand,
+      rating: 4.5,
+      reviews: Math.floor(Math.random() * 200) + 20,
+      inStock: staticProduct.inStock,
+      stockCount: staticProduct.stockCount,
+      description: `High-quality ${staticProduct.name.toLowerCase()} from ${staticProduct.brand}. Perfect for your needs with excellent value and customer satisfaction.`,
+      features: [
+        'Premium quality',
+        'Great value',
+        'Customer favorite',
+        'Durable construction',
+        'Satisfaction guaranteed',
+        'Popular choice'
+      ],
+      specifications: {
+        'Brand': staticProduct.brand,
+        'Category': staticProduct.category,
+        'Stock': `${staticProduct.stockCount} available`,
+      },
+      images: [getProductImage(staticProduct.name), getProductImage(staticProduct.name), getProductImage(staticProduct.name), getProductImage(staticProduct.name)],
+      relatedProducts: staticProductsList
+        .filter(p => p.category === staticProduct.category && p.id !== staticProduct.id)
+        .slice(0, 3)
+        .map(p => ({ id: p.id, name: p.name, price: p.price, image: getProductImage(p.name) })),
+    };
+  }
+  
+  return null;
 };
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { addToCart, getCartCount } = useCart();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -446,15 +529,42 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [quantity, setQuantity] = useState(1);
   const [selectedTab, setSelectedTab] = useState('description');
   const [addedToCart, setAddedToCart] = useState(false);
+  const [productId, setProductId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
 
   useEffect(() => {
+    params.then((resolvedParams) => {
+      setProductId(resolvedParams.id);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!productId) return;
+    
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`/api/products/${params.id}`);
+        // First check if it's a numeric ID (static product)
+        const numericId = parseInt(productId, 10);
+        if (!isNaN(numericId) && numericId >= 1 && numericId <= 30) {
+          // It's a static product, get from mock data
+          const mockProduct = getProduct(productId);
+          if (mockProduct) {
+            setProduct(mockProduct);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // Otherwise, try to fetch from API
+        const res = await fetch(`/api/products/${productId}`);
         if (!res.ok) {
           if (res.status === 404) {
             // Try legacy mock data as fallback
-            const mockProduct = getProduct(params.id);
+            const mockProduct = getProduct(productId);
             if (mockProduct) {
               setProduct(mockProduct);
               setLoading(false);
@@ -506,22 +616,32 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     };
 
     fetchProduct();
-  }, [params.id]);
+  }, [productId]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center text-gray-600">Loading product...</div>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="text-gray-600">Loading product...</div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-          <a href="/products" className="text-blue-600 hover:text-blue-700">← Back to Products</a>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center animate-fade-in">
+            <div className="text-6xl mb-4">😕</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+            <a href="/products" className="text-blue-600 hover:text-blue-700 font-semibold">← Back to Products</a>
+          </div>
         </div>
       </div>
     );
@@ -529,25 +649,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <a href="/" className="text-xl font-bold text-blue-600">CloudStore</a>
-              <div className="hidden md:flex space-x-6">
-                <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
-                <a href="/products" className="text-gray-600 hover:text-blue-600">Products</a>
-                <a href="/categories" className="text-gray-600 hover:text-blue-600">Categories</a>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/cart" className="text-gray-600 hover:text-blue-600">Cart ({getCartCount()})</a>
-              <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -564,29 +673,61 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div>
-            <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-6xl">
-              {product.images[selectedImage]}
+            <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden border border-gray-200">
+              {typeof product.images[selectedImage] === 'string' &&
+              (product.images[selectedImage].startsWith('http://') ||
+                product.images[selectedImage].startsWith('https://') ||
+                product.images[selectedImage].startsWith('data:')) ? (
+                <img
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-gray-50 to-gray-100">
+                  {product.images[selectedImage] || '📦'}
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
+              {product.images.map((image: string, index: number) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-2xl ${
-                    selectedImage === index ? 'ring-2 ring-blue-500' : ''
+                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all ${
+                    selectedImage === index ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  {image}
+                  {typeof image === 'string' &&
+                  (image.startsWith('http://') ||
+                    image.startsWith('https://') ||
+                    image.startsWith('data:')) ? (
+                    <img
+                      src={image}
+                      alt={`${product.name} view ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl">
+                      {image || '📦'}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Product Info */}
+          <div className="space-y-6">
           <div>
-            <div className="mb-4">
-              <span className="text-sm text-gray-600">{product.brand}</span>
-              <h1 className="text-3xl font-bold text-gray-900 mt-1">{product.name}</h1>
+              <div className="mb-2">
+                <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">{product.brand}</span>
+              </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
+              <div className="text-sm text-gray-600">
+                <span>Category: </span>
+                <span className="font-medium text-blue-600">{product.category}</span>
+              </div>
             </div>
 
             {/* Rating */}
@@ -643,7 +784,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   >
                     -
                   </button>
-                  <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                  <span className="px-4 py-2 border-x border-gray-300 text-gray-900 font-semibold bg-white">{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stockCount, quantity + 1))}
                     className="px-3 py-2 text-gray-600 hover:text-gray-800"
@@ -663,11 +804,23 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                         inStock: product.inStock,
                       };
                       // Add quantity times
+                      let allAdded = true;
                       for (let i = 0; i < quantity; i++) {
-                        addToCart(productToAdd);
+                        const added = addToCart(productToAdd, true);
+                        if (!added) {
+                          allAdded = false;
+                          break;
+                        }
                       }
-                      setAddedToCart(true);
-                      setTimeout(() => setAddedToCart(false), 2000);
+                      if (allAdded) {
+                        setAddedToCart(true);
+                        setToast({ message: `${quantity} x ${product.name} added to cart!`, type: 'success', isVisible: true });
+                        setTimeout(() => setAddedToCart(false), 2000);
+                      } else {
+                        setToast({ message: 'Please sign in to add items to cart', type: 'info', isVisible: true });
+                      }
+                    } else {
+                      setToast({ message: 'Product is out of stock', type: 'error', isVisible: true });
                     }
                   }}
                   className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors ${
@@ -685,13 +838,15 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
 
             {/* Features */}
-            <div className="mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Key Features</h3>
-              <ul className="space-y-2">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-center text-gray-600">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-                    {feature}
+            <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
+              <h3 className="font-bold text-gray-900 mb-4 text-lg">Key Features</h3>
+              <ul className="space-y-3">
+                {product.features.map((feature: string, index: number) => (
+                  <li key={index} className="flex items-start text-gray-700">
+                    <svg className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -722,21 +877,25 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div className="py-8">
             {selectedTab === 'description' && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Description</h3>
-                <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Description</h3>
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">{product.description}</p>
+                </div>
               </div>
             )}
 
             {selectedTab === 'specifications' && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Specifications</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">Product Specifications</h3>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="divide-y divide-gray-200">
                   {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="flex justify-between py-2 border-b border-gray-200">
-                      <span className="font-medium text-gray-900">{key}</span>
-                      <span className="text-gray-600">{value}</span>
+                      <div key={key} className="flex justify-between items-center py-4 px-6 hover:bg-gray-50 transition-colors">
+                        <span className="font-semibold text-gray-900">{key}</span>
+                        <span className="text-gray-700 font-medium">{String(value)}</span>
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -769,7 +928,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="mt-16">
           <h3 className="text-2xl font-bold text-gray-900 mb-8">Related Products</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {product.relatedProducts.map((relatedProduct) => (
+            {product.relatedProducts.map((relatedProduct: any) => (
               <div key={relatedProduct.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 <div className="h-48 bg-gray-100 flex items-center justify-center text-4xl">
                   {relatedProduct.image}

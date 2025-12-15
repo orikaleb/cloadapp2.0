@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 export async function GET(_request: Request, { params }: Params) {
   try {
+    const { id } = await params;
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         customer: true,
         orderItems: {
@@ -27,9 +28,10 @@ export async function GET(_request: Request, { params }: Params) {
 
 export async function PUT(request: Request, { params }: Params) {
   try {
+    const { id } = await params;
     const data = await request.json()
     const updated = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data,
     })
     return NextResponse.json(updated)
@@ -40,7 +42,8 @@ export async function PUT(request: Request, { params }: Params) {
 
 export async function DELETE(_request: Request, { params }: Params) {
   try {
-    await prisma.order.delete({ where: { id: params.id } })
+    const { id } = await params;
+    await prisma.order.delete({ where: { id } })
     return NextResponse.json({ message: 'Order deleted successfully' })
   } catch (error: unknown) {
     return NextResponse.json({ error: 'Failed to delete order' }, { status: 500 })

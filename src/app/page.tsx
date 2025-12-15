@@ -1,194 +1,311 @@
 'use client';
 
 import { useCart } from '@/lib/cart-context';
+import { useState, useEffect } from 'react';
+import Navigation from '@/components/Navigation';
+import { ProductGridSkeleton } from '@/components/LoadingSkeleton';
+import Toast from '@/components/Toast';
+import { getProductImage } from '@/lib/product-images';
+
+type Product = {
+  id: string;
+  productName: string;
+  price: number;
+  productImages?: Array<{
+    imageUrl: string;
+    isPrimary: boolean;
+  }>;
+};
 
 export default function Home() {
   const { getCartCount } = useCart();
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const products = await res.json();
+        // Get first 8 products as featured
+        setFeaturedProducts(products.slice(0, 8));
+      }
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getProductEmoji = (productName: string): string => {
+    const name = productName.toLowerCase();
+    if (name.includes('headphone') || name.includes('earphone')) return '🎧';
+    if (name.includes('watch')) return '⌚';
+    if (name.includes('laptop') || name.includes('stand')) return '💻';
+    if (name.includes('speaker')) return '🔊';
+    if (name.includes('shirt') || name.includes('t-shirt')) return '👕';
+    if (name.includes('shoe') || name.includes('boot')) return '👟';
+    if (name.includes('console') || name.includes('gaming')) return '🎮';
+    if (name.includes('keyboard')) return '⌨️';
+    if (name.includes('tablet') || name.includes('phone')) return '📱';
+    if (name.includes('jacket')) return '🧥';
+    return '📦';
+  };
   
   return (
     <div className="min-h-screen bg-white">
-      {/* Simple Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-bold text-blue-600">CloudStore</h1>
-            <div className="flex items-center space-x-4">
-              <a href="/cart" className="text-gray-600 hover:text-blue-600">Cart ({getCartCount()})</a>
-              <a href="/admin/login" className="text-gray-600 hover:text-blue-600 text-sm">Admin</a>
-              <a href="/auth/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign In</a>
-            </div>
-          </div>
+      <Navigation />
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
+
+      {/* Hero Section with Animation */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20 sm:py-32 animate-fade-in">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to CloudStore
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Modern e-commerce platform built with Next.js, Prisma, and MongoDB Atlas
-          </p>
-          <a href="/products" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 inline-block">
-            Start Shopping
-          </a>
-        </div>
-      </section>
-
-      {/* Quick Features */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4">
-              <div className="text-2xl mb-2">⚡</div>
-              <h3 className="font-semibold mb-2">Fast</h3>
-              <p className="text-sm text-gray-600">Built with Next.js for optimal performance</p>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-2xl mb-2">🔒</div>
-              <h3 className="font-semibold mb-2">Secure</h3>
-              <p className="text-sm text-gray-600">MongoDB Atlas ensures data safety</p>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-2xl mb-2">📱</div>
-              <h3 className="font-semibold mb-2">Responsive</h3>
-              <p className="text-sm text-gray-600">Works perfectly on all devices</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sample Products */}
-      <section className="py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Featured Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-blue-100 rounded mb-4 flex items-center justify-center text-4xl">
-                🎧
-              </div>
-              <h3 className="font-semibold mb-2">Wireless Headphones</h3>
-              <p className="text-gray-600 text-sm mb-3">Premium quality with noise cancellation</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵199.99</span>
-                <a href="/products/1" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-green-100 rounded mb-4 flex items-center justify-center text-4xl">
-                ⌚
-              </div>
-              <h3 className="font-semibold mb-2">Smart Watch</h3>
-              <p className="text-gray-600 text-sm mb-3">Fitness tracking and notifications</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵299.99</span>
-                <a href="/products/2" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-purple-100 rounded mb-4 flex items-center justify-center text-4xl">
-                💻
-              </div>
-              <h3 className="font-semibold mb-2">Laptop Stand</h3>
-              <p className="text-gray-600 text-sm mb-3">Ergonomic aluminum design</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵79.99</span>
-                <a href="/products/3" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-yellow-100 rounded mb-4 flex items-center justify-center text-4xl">
-                🎮
-              </div>
-              <h3 className="font-semibold mb-2">Gaming Console</h3>
-              <p className="text-gray-600 text-sm mb-3">Next-gen 4K gaming experience</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵499.99</span>
-                <a href="/products/8" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-red-100 rounded mb-4 flex items-center justify-center text-4xl">
-                👟
-              </div>
-              <h3 className="font-semibold mb-2">Running Shoes</h3>
-              <p className="text-gray-600 text-sm mb-3">Advanced cushioning technology</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵149.99</span>
-                <a href="/products/6" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-indigo-100 rounded mb-4 flex items-center justify-center text-4xl">
-                ⌨️
-              </div>
-              <h3 className="font-semibold mb-2">Gaming Keyboard</h3>
-              <p className="text-gray-600 text-sm mb-3">Mechanical switches with RGB</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵129.99</span>
-                <a href="/products/30" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-pink-100 rounded mb-4 flex items-center justify-center text-4xl">
-                🧥
-              </div>
-              <h3 className="font-semibold mb-2">Leather Jacket</h3>
-              <p className="text-gray-600 text-sm mb-3">Premium quality leather</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵249.99</span>
-                <a href="/products" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="h-32 bg-teal-100 rounded mb-4 flex items-center justify-center text-4xl">
-                📱
-              </div>
-              <h3 className="font-semibold mb-2">Tablet</h3>
-              <p className="text-gray-600 text-sm mb-3">High-resolution display</p>
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">₵349.99</span>
-                <a href="/products" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                  View
-                </a>
-              </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent animate-gradient">
+                Welcome to CloudStore
+              </span>
+            </h1>
+            <p className="text-xl sm:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              Discover amazing products at unbeatable prices. Your one-stop shop for everything you need.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <a 
+                href="/products" 
+                className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold text-lg shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center">
+                  Start Shopping
+                  <svg className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </a>
+              <a 
+                href="/categories" 
+                className="px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-600 hover:text-blue-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+              >
+                Browse Categories
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Simple Footer */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h3 className="text-lg font-semibold mb-4">CloudStore</h3>
-          <p className="text-gray-400 mb-4">
-            Your trusted e-commerce platform
-          </p>
-          <p className="text-sm text-gray-500">
-            © 2024 CloudStore. Built with Next.js, Prisma, and MongoDB Atlas.
-          </p>
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose CloudStore?</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Experience shopping like never before with our modern platform
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="group text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                <span className="text-3xl">⚡</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Lightning Fast</h3>
+              <p className="text-gray-600 leading-relaxed">Built with Next.js for optimal performance and instant page loads</p>
+            </div>
+            <div className="group text-center p-8 rounded-2xl bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                <span className="text-3xl">🔒</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Secure & Safe</h3>
+              <p className="text-gray-600 leading-relaxed">Firebase ensures your data is protected with enterprise-grade security</p>
+            </div>
+            <div className="group text-center p-8 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                <span className="text-3xl">📱</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Fully Responsive</h3>
+              <p className="text-gray-600 leading-relaxed">Shop seamlessly on any device - desktop, tablet, or mobile</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Products</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Discover our handpicked selection of premium products
+            </p>
+          </div>
+          
+          {loading ? (
+            <ProductGridSkeleton count={8} />
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-600 text-lg">No products available at the moment.</p>
+              <a href="/products" className="mt-4 inline-block text-blue-600 hover:text-blue-700 font-semibold">
+                Browse All Products →
+              </a>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product, index) => {
+                const primaryImage = product.productImages?.find(img => img.isPrimary) || product.productImages?.[0];
+                const fallbackImage = getProductImage(product.productName);
+                
+                return (
+                  <a
+                    key={product.id}
+                    href={`/products/${product.id}`}
+                    className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300 block cursor-pointer animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {/* Product Image */}
+                    <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+                      {primaryImage ? (
+                        <img
+                          src={primaryImage.imageUrl}
+                          alt={product.productName}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            e.currentTarget.src = fallbackImage;
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={fallbackImage}
+                          alt={product.productName}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      )}
+                      {/* Overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      {/* Quick View Badge */}
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                        Quick View
+                      </div>
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="p-5">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        {product.productName}
+                      </h3>
+                      <div className="flex items-center justify-between mt-4">
+                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                          ₵{product.price.toFixed(2)}
+                        </span>
+                        <span className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-md text-sm transform group-hover:scale-105 transition-transform">
+                          View Details →
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          )}
+          
+          {featuredProducts.length > 0 && (
+            <div className="text-center mt-12">
+              <a
+                href="/products"
+                className="inline-flex items-center px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-600 hover:text-blue-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+              >
+                View All Products
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Modern Footer */}
+      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">C</span>
+                </div>
+                <h3 className="text-2xl font-bold">CloudStore</h3>
+              </div>
+              <p className="text-gray-400 mb-4 max-w-md">
+                Your trusted e-commerce platform. Discover amazing products at unbeatable prices with a seamless shopping experience.
+              </p>
+              <div className="flex space-x-4">
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <span className="text-xl">📘</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <span className="text-xl">🐦</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <span className="text-xl">📷</span>
+                </a>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-lg mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><a href="/products" className="text-gray-400 hover:text-white transition-colors">All Products</a></li>
+                <li><a href="/categories" className="text-gray-400 hover:text-white transition-colors">Categories</a></li>
+                <li><a href="/cart" className="text-gray-400 hover:text-white transition-colors">Shopping Cart</a></li>
+                <li><a href="/auth/login" className="text-gray-400 hover:text-white transition-colors">Sign In</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-lg mb-4">Support</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Shipping Info</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Returns</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 pt-8 mt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 text-sm mb-4 md:mb-0">
+                © {new Date().getFullYear()} CloudStore. All rights reserved.
+              </p>
+              <div className="flex space-x-6 text-sm text-gray-400">
+                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+                <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+              </div>
+            </div>
+            <p className="text-center text-gray-500 text-xs mt-4">
+              Built with Next.js and Firebase
+            </p>
+          </div>
         </div>
       </footer>
     </div>

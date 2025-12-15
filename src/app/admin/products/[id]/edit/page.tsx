@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 type Category = {
   id: string;
@@ -19,8 +19,10 @@ type Product = {
   categoryId: string;
 };
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const [categories, setCategories] = useState<Category[]>([]);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,13 +38,15 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   });
 
   useEffect(() => {
-    fetchData();
-  }, [params.id]);
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
 
   const fetchData = async () => {
     try {
       const [productRes, categoriesRes] = await Promise.all([
-        fetch(`/api/products/${params.id}`),
+        fetch(`/api/products/${id}`),
         fetch('/api/categories'),
       ]);
 
@@ -94,7 +98,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         categoryId: formData.categoryId,
       };
 
-      const res = await fetch(`/api/products/${params.id}`, {
+      const res = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData),
