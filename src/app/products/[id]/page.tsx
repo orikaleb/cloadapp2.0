@@ -930,8 +930,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {product.relatedProducts.map((relatedProduct: any) => (
               <div key={relatedProduct.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className="h-48 bg-gray-100 flex items-center justify-center text-4xl">
-                  {relatedProduct.image}
+                <div className="h-48 bg-gray-100 flex items-center justify-center text-4xl overflow-hidden">
+                  {typeof relatedProduct.image === 'string' &&
+                  (relatedProduct.image.startsWith('http://') ||
+                    relatedProduct.image.startsWith('https://') ||
+                    relatedProduct.image.startsWith('data:')) ? (
+                    <img
+                      src={relatedProduct.image}
+                      alt={relatedProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{relatedProduct.image || '📦'}</span>
+                  )}
                 </div>
                 <div className="p-4">
                   <h4 className="font-semibold text-gray-900 mb-2">{relatedProduct.name}</h4>

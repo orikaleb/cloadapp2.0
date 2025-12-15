@@ -19,10 +19,10 @@ export default function CheckoutPage() {
     isVisible: false,
   });
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 100 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const shipping = subtotal > 100 ? 0 : 9.99;
+const tax = subtotal * 0.08;
+const total = subtotal + shipping + tax;
 
   const [formData, setFormData] = useState({
     // Shipping Information
